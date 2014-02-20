@@ -169,7 +169,11 @@ static const CGFloat SVProgressHUDRingThickness = 6;
         self.activityCount = 0;
         
         self.backgroundColor = [UIColor whiteColor];
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 70000
         self.statusFont = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
+#else
+        self.statusFont = [UIFont systemFontOfSize:12.0];
+#endif
         self.successImage = [UIImage imageNamed:@"SVProgressHUD.bundle/success-black"];
         self.errorImage = [UIImage imageNamed:@"SVProgressHUD.bundle/error-black"];
     }
@@ -745,6 +749,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
         _hudView.autoresizingMask = (UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin |
                                      UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin);
         
+#if __IPHONE_OS_VERSION_MIN_REQUIRED >= 70000
         UIInterpolatingMotionEffect *effectX = [[UIInterpolatingMotionEffect alloc] initWithKeyPath: @"center.x" type: UIInterpolatingMotionEffectTypeTiltAlongHorizontalAxis];
         effectX.minimumRelativeValue = @(-SVProgressHUDParallaxDepthPoints);
         effectX.maximumRelativeValue = @(SVProgressHUDParallaxDepthPoints);
@@ -755,7 +760,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
         
         [_hudView addMotionEffect: effectX];
         [_hudView addMotionEffect: effectY];
-        
+#endif
         [self addSubview:_hudView];
     }
     return _hudView;
