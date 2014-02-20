@@ -35,6 +35,7 @@ typedef NSUInteger SVProgressHUDMaskType;
 @property (nonatomic, strong) UIImage *successImage;
 @property (nonatomic, strong) UIImage *errorImage;
 @property (nonatomic, strong) UIColor *backgroundColor;
+@property (nonatomic, strong) UIColor *textColor;
 
 + (void)setOffsetFromCenter:(UIOffset)offset;
 + (void)resetOffsetFromCenter;

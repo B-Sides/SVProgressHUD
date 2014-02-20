@@ -231,10 +231,17 @@ static const CGFloat SVProgressHUDRingThickness = 6;
     
     if(string) {
         CGSize constraintSize = CGSizeMake(200, 300);
-        CGRect stringRect = [string boundingRectWithSize:constraintSize
-                                                 options:(NSStringDrawingUsesFontLeading|NSStringDrawingTruncatesLastVisibleLine|NSStringDrawingUsesLineFragmentOrigin)
-                                              attributes:@{NSFontAttributeName: self.stringLabel.font}
-                                                 context:NULL];
+        CGRect stringRect;
+        if ([string respondsToSelector:@selector(boundingRectWithSize:options:attributes:context:)]) {
+            stringRect = [string boundingRectWithSize:constraintSize
+                                                     options:(NSStringDrawingUsesFontLeading|NSStringDrawingTruncatesLastVisibleLine|NSStringDrawingUsesLineFragmentOrigin)
+                                                  attributes:@{NSFontAttributeName: self.stringLabel.font}
+                                                     context:NULL];
+        }
+        else {
+            NSAttributedString *attrStr = [[NSAttributedString alloc] initWithString:string];
+            stringRect = [attrStr boundingRectWithSize:constraintSize options:(NSStringDrawingUsesFontLeading|NSStringDrawingTruncatesLastVisibleLine|NSStringDrawingUsesLineFragmentOrigin) context:NULL];
+        }
         stringWidth = stringRect.size.width;
         stringHeight = ceil(stringRect.size.height);
 
@@ -621,7 +628,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
                                  SVProgressHUDRingRadius*2+SVProgressHUDRingThickness,
                                  SVProgressHUDRingRadius*2+SVProgressHUDRingThickness);
         slice.fillColor = [UIColor clearColor].CGColor;
-        slice.strokeColor = self.tintColor.CGColor;
+        slice.strokeColor = self.hudTintColor.CGColor;
         slice.lineWidth = SVProgressHUDRingThickness;
         slice.lineCap = kCALineCapRound;
         slice.lineJoin = kCALineJoinBevel;
@@ -656,7 +663,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
         _ringLayer = [self createRingLayerWithCenter:center
                                               radius:SVProgressHUDRingRadius
                                            lineWidth:SVProgressHUDRingThickness
-                                               color:self.tintColor];
+                                               color:self.hudTintColor];
         [self.hudView.layer addSublayer:_ringLayer];
     }
     return _ringLayer;
@@ -668,7 +675,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
         _backgroundRingLayer = [self createRingLayerWithCenter:center
                                                         radius:SVProgressHUDRingRadius
                                                      lineWidth:SVProgressHUDRingThickness
-                                                         color:[self.tintColor colorWithAlphaComponent:0.1]];
+                                                         color:[self.hudTintColor colorWithAlphaComponent:0.1]];
         _backgroundRingLayer.strokeEnd = 1;
         [self.hudView.layer addSublayer:_backgroundRingLayer];
     }
@@ -727,6 +734,15 @@ static const CGFloat SVProgressHUDRingThickness = 6;
     return (self.maskType == SVProgressHUDMaskTypeClear || self.maskType == SVProgressHUDMaskTypeNone);
 }
 
+- (UIColor *)hudTintColor {
+    if ([self respondsToSelector:@selector(tintColor)]) {
+        return self.tintColor;
+    }
+    else {
+        return self.textColor;
+    }
+}
+
 - (UIControl *)overlayView {
     if(!_overlayView) {
         _overlayView = [[UIControl alloc] initWithFrame:[UIScreen mainScreen].bounds];
@@ -741,7 +757,9 @@ static const CGFloat SVProgressHUDRingThickness = 6;
     if(!_hudView) {
         _hudView = [[UIToolbar alloc] initWithFrame:CGRectZero];
         ((UIToolbar *)_hudView).translucent = YES;
-        ((UIToolbar *)_hudView).barTintColor = self.backgroundColor;
+        if ([((UIToolbar *)_hudView) respondsToSelector:@selector(setBarTintColor:)]) {
+            ((UIToolbar *)_hudView).barTintColor = self.backgroundColor;
+        }
         
         _hudView.layer.cornerRadius = 14;
         _hudView.layer.masksToBounds = YES;
@@ -773,7 +791,7 @@ static const CGFloat SVProgressHUDRingThickness = 6;
 		_stringLabel.adjustsFontSizeToFitWidth = YES;
         _stringLabel.textAlignment = NSTextAlignmentCenter;
 		_stringLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
-		_stringLabel.textColor = self.tintColor;
+		_stringLabel.textColor = self.hudTintColor;
 		_stringLabel.font = self.statusFont;
         _stringLabel.numberOfLines = 0;
     }
